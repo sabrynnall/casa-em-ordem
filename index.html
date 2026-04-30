@@ -513,7 +513,7 @@ window.setTab = function(cat) { activeTab=cat; render(); };
 window.toggleTask = function(key, cat, freq, ti) {
   if (!S.checked) S.checked = {};
   S.checked[key] = !S.checked[key];
-  updateFirebase({'checked/'+key: S.checked[key]});
+  const upd = {}; upd['checked/'+key] = S.checked[key]; updateFirebase(upd);
   // fast DOM update
   const sec = document.getElementById('sec-'+eid(cat));
   if (sec) {
