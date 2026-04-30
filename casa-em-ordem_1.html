@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casa em Ordem</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cream: #F7F3ED; --warm: #EDE6D9; --sand: #D8CCBA; --bark: #8C7355;
+  --deep: #2C2417; --ink: #1A1209; --sage: #6B7C5E; --sage-light: #E8EDE4;
+  --terra: #C4633A; --terra-light: #F5E8E0; --sky: #4A7BA0; --sky-light: #E3EEF5;
+  --gold-light: #F5EDD6; --r: 14px; --rs: 8px;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--deep); min-height: 100vh; font-size: 15px; line-height: 1.6; }
+
+header { background: var(--ink); color: var(--cream); padding: 1.5rem 1.5rem 1rem; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.header-inner { max-width: 720px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.logo h1 { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 500; color: var(--cream); letter-spacing: -0.5px; }
+.logo p { font-size: 11px; color: rgba(247,243,237,0.4); margin-top: 2px; }
+.header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.overall-ring { width: 40px; height: 40px; }
+.overall-ring svg { transform: rotate(-90deg); }
+.overall-ring circle { transition: stroke-dashoffset 0.6s ease; }
+.overall-text { font-size: 11px; color: rgba(247,243,237,0.5); line-height: 1.3; }
+.overall-text strong { font-size: 17px; font-weight: 500; color: var(--cream); display: block; }
+.edit-mode-btn { font-size: 12px; padding: 5px 14px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.2); background: none; color: rgba(247,243,237,0.7); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; white-space: nowrap; }
+.edit-mode-btn:hover { background: rgba(255,255,255,0.08); color: var(--cream); }
+.edit-mode-btn.active { background: var(--terra); border-color: var(--terra); color: white; }
+.sync-badge { font-size: 11px; padding: 3px 10px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.15); color: rgba(247,243,237,0.5); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: #888; transition: background 0.3s; }
+.sync-dot.online { background: #6B7C5E; }
+.sync-dot.syncing { background: var(--terra); animation: pulse 0.8s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+nav { background: var(--ink); padding: 0 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 73px; z-index: 99; overflow-x: auto; scrollbar-width: none; }
+nav::-webkit-scrollbar { display: none; }
+.nav-inner { max-width: 720px; margin: 0 auto; display: flex; align-items: stretch; }
+.nav-tab { padding: 11px 14px; font-size: 13px; color: rgba(247,243,237,0.45); cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif; background: none; border-left: none; border-right: none; border-top: none; }
+.nav-tab:hover { color: rgba(247,243,237,0.75); }
+.nav-tab.active { color: var(--cream); border-bottom-color: var(--terra); }
+.tab-count { font-size: 10px; background: rgba(255,255,255,0.1); border-radius: 99px; padding: 1px 6px; min-width: 20px; text-align: center; }
+.nav-tab.active .tab-count { background: var(--terra); color: white; }
+.tab-edit-wrap { display: flex; align-items: stretch; }
+.tab-name-input { font-size: 13px; font-family: 'DM Sans', sans-serif; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: var(--cream); padding: 2px 6px; width: 80px; outline: none; }
+.del-cat-btn { color: rgba(247,243,237,0.3); background: none; border: none; cursor: pointer; padding: 0 8px; font-size: 16px; transition: color 0.2s; align-self: center; }
+.del-cat-btn:hover { color: var(--terra); }
+.add-cat-btn { padding: 11px 14px; font-size: 12px; color: rgba(247,243,237,0.35); cursor: pointer; white-space: nowrap; display: flex; align-items: center; font-family: 'DM Sans', sans-serif; background: none; border: none; transition: color 0.2s; }
+.add-cat-btn:hover { color: rgba(247,243,237,0.7); }
+
+.names-bar { background: var(--warm); border-bottom: 1px solid var(--sand); padding: 8px 1.5rem; display: none; }
+.names-bar.visible { display: block; }
+.names-inner { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.names-inner label { font-size: 12px; color: var(--bark); }
+.name-input { font-size: 13px; font-family: 'DM Sans', sans-serif; background: white; border: 1px solid var(--sand); border-radius: 6px; color: var(--deep); padding: 4px 10px; width: 130px; outline: none; }
+.name-input:focus { border-color: var(--bark); }
+.names-sep { color: var(--sand); }
+
+main { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.5rem 4rem; }
+.cat-section { display: none; }
+.cat-section.active { display: block; }
+
+.cat-progress { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; padding: 10px 14px; background: var(--warm); border-radius: var(--r); border: 1px solid var(--sand); }
+.progress-track { flex: 1; height: 5px; background: var(--sand); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--sage); border-radius: 99px; transition: width 0.4s ease; }
+.progress-pct { font-size: 12px; font-weight: 500; color: var(--bark); min-width: 34px; text-align: right; }
+
+.freq-group { margin-bottom: 1.5rem; }
+.freq-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.freq-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--bark); white-space: nowrap; }
+.freq-input { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; font-family: 'DM Sans', sans-serif; background: white; border: 1px solid var(--sand); border-radius: 4px; color: var(--bark); padding: 2px 8px; width: 120px; outline: none; }
+.freq-line { flex: 1; height: 1px; background: var(--sand); }
+.del-freq-btn { font-size: 11px; color: var(--bark); background: none; border: 1px solid var(--sand); border-radius: 99px; padding: 2px 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; display: none; transition: all 0.15s; }
+.del-freq-btn:hover { border-color: var(--terra); color: var(--terra); }
+body.editing .del-freq-btn { display: block; }
+
+.task { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--rs); border: 1px solid var(--sand); background: white; margin-bottom: 4px; transition: all 0.15s; user-select: none; }
+body:not(.editing) .task { cursor: pointer; }
+body:not(.editing) .task:hover { border-color: var(--bark); background: var(--warm); }
+.task:active { transform: scale(0.99); }
+.task.done { background: var(--warm); border-color: var(--sand); opacity: 0.55; }
+.task.done .task-text { text-decoration: line-through; color: var(--bark); }
+.checkbox { width: 17px; height: 17px; border-radius: 5px; border: 1.5px solid var(--sand); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; background: white; cursor: pointer; }
+.task.done .checkbox { background: var(--sage); border-color: var(--sage); }
+.checkmark { display: none; width: 9px; height: 6px; border-left: 2px solid white; border-bottom: 2px solid white; transform: rotate(-45deg) translate(1px,-1px); }
+.task.done .checkmark { display: block; }
+.task-text { font-size: 14px; flex: 1; color: var(--deep); }
+.task-text-input { font-size: 14px; flex: 1; font-family: 'DM Sans', sans-serif; background: var(--cream); border: 1px solid var(--sand); border-radius: 5px; color: var(--deep); padding: 3px 8px; outline: none; display: none; }
+.task-text-input:focus { border-color: var(--bark); background: white; }
+body.editing .task-text { display: none; }
+body.editing .task-text-input { display: block; }
+.who-tag { font-size: 11px; padding: 3px 8px; border-radius: 99px; font-weight: 500; flex-shrink: 0; }
+body.editing .who-tag { cursor: pointer; }
+body.editing .who-tag:hover { opacity: 0.75; }
+.who-eu { background: var(--sky-light); color: var(--sky); }
+.who-ele { background: var(--terra-light); color: var(--terra); }
+.who-juntos { background: var(--sage-light); color: var(--sage); }
+.del-task-btn { font-size: 18px; color: var(--sand); background: none; border: none; cursor: pointer; padding: 0 2px; line-height: 1; transition: color 0.15s; display: none; flex-shrink: 0; }
+.del-task-btn:hover { color: var(--terra); }
+body.editing .del-task-btn { display: block; }
+
+.add-task-row { display: none; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--rs); border: 1px dashed var(--sand); margin-bottom: 4px; transition: border-color 0.2s; }
+.add-task-row:focus-within { border-color: var(--bark); background: white; }
+body.editing .add-task-row { display: flex; }
+.add-task-input { font-size: 13px; flex: 1; font-family: 'DM Sans', sans-serif; background: none; border: none; color: var(--deep); padding: 2px 0; outline: none; }
+.add-task-input::placeholder { color: var(--sand); }
+.add-task-who { font-size: 11px; padding: 3px 8px; border-radius: 99px; font-weight: 500; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; }
+.add-task-who:hover { opacity: 0.75; }
+.add-task-submit { font-size: 12px; color: var(--bark); background: none; border: 1px solid var(--sand); border-radius: 99px; padding: 3px 10px; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: all 0.15s; }
+.add-task-submit:hover { border-color: var(--bark); background: var(--warm); }
+
+.add-freq-wrap { margin-top: 4px; display: none; }
+body.editing .add-freq-wrap { display: block; }
+.add-freq-btn { font-size: 11px; color: var(--bark); background: none; border: 1px dashed var(--sand); border-radius: 6px; padding: 6px 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; width: 100%; transition: all 0.15s; }
+.add-freq-btn:hover { border-color: var(--bark); background: var(--warm); }
+
+.toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 8px; }
+.legend { display: flex; gap: 8px; flex-wrap: wrap; }
+.legend-chip { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--bark); background: var(--warm); border: 1px solid var(--sand); border-radius: 99px; padding: 3px 10px; }
+.legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+.reset-btn { font-size: 12px; color: var(--bark); cursor: pointer; background: none; border: 1px solid var(--sand); border-radius: 99px; padding: 4px 12px; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.reset-btn:hover { background: var(--warm); border-color: var(--bark); }
+.edit-hint { font-size: 12px; color: #7a6020; background: var(--gold-light); border: 1px solid #e5d4a0; border-radius: var(--rs); padding: 8px 14px; margin-bottom: 1rem; display: none; }
+body.editing .edit-hint { display: block; }
+
+/* Loading */
+.loading-screen { position: fixed; inset: 0; background: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 999; transition: opacity 0.4s; }
+.loading-screen.hidden { opacity: 0; pointer-events: none; }
+.loading-logo { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; color: var(--cream); }
+.loading-sub { font-size: 13px; color: rgba(247,243,237,0.4); }
+.loading-spinner { width: 24px; height: 24px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--terra); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(26,18,9,0.55); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal { background: white; border-radius: var(--r); padding: 1.5rem; width: 100%; max-width: 360px; transform: translateY(8px); transition: transform 0.2s; }
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal h3 { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; margin-bottom: 1rem; color: var(--deep); }
+.modal input { width: 100%; font-size: 14px; font-family: 'DM Sans', sans-serif; background: var(--cream); border: 1px solid var(--sand); border-radius: var(--rs); color: var(--deep); padding: 8px 12px; outline: none; margin-bottom: 1rem; }
+.modal input:focus { border-color: var(--bark); background: white; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.modal-cancel { font-size: 13px; padding: 7px 16px; border-radius: 99px; border: 1px solid var(--sand); background: none; color: var(--bark); cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.modal-confirm { font-size: 13px; padding: 7px 16px; border-radius: 99px; border: none; background: var(--terra); color: white; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+@media (max-width: 480px) {
+  header { padding: 1rem; }
+  nav { top: 65px; padding: 0 1rem; }
+  main { padding: 1rem 1rem 3rem; }
+  .logo h1 { font-size: 20px; }
+  .names-bar { padding: 8px 1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loading">
+  <div class="loading-logo">Casa em Ordem</div>
+  <div class="loading-spinner"></div>
+  <div class="loading-sub">Conectando...</div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <h1>Casa em Ordem</h1>
+      <p>organização do casal &amp; bebê</p>
+    </div>
+    <div class="header-right">
+      <div class="sync-badge">
+        <div class="sync-dot" id="sync-dot"></div>
+        <span id="sync-label">conectando</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="overall-ring">
+          <svg width="40" height="40" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3"/>
+            <circle id="ring-fill" cx="20" cy="20" r="16" fill="none" stroke="#C4633A" stroke-width="3"
+              stroke-dasharray="100.5" stroke-dashoffset="100.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="overall-text">
+          <strong id="overall-pct">0%</strong>
+          <span id="overall-label">concluídas</span>
+        </div>
+      </div>
+      <button class="edit-mode-btn" id="edit-btn" onclick="toggleEditMode()">✏️ Editar</button>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner" id="nav-tabs"></div>
+</nav>
+
+<div class="names-bar" id="names-bar">
+  <div class="names-inner">
+    <label>Nomes:</label>
+    <input class="name-input" id="name-eu" placeholder="Seu nome" oninput="saveNames()" />
+    <span class="names-sep">&amp;</span>
+    <input class="name-input" id="name-ele" placeholder="Nome do esposo" oninput="saveNames()" />
+  </div>
+</div>
+
+<main>
+  <div class="toolbar">
+    <div class="legend">
+      <div class="legend-chip"><div class="legend-dot" style="background:#4A7BA0"></div><span id="leg-eu">Eu</span></div>
+      <div class="legend-chip"><div class="legend-dot" style="background:#C4633A"></div><span id="leg-ele">Ele</span></div>
+      <div class="legend-chip"><div class="legend-dot" style="background:#6B7C5E"></div>Juntos</div>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">limpar tudo</button>
+  </div>
+  <div class="edit-hint">Modo edição — clique nos textos para editar, nas tags coloridas para trocar responsável, e use os botões + para adicionar.</div>
+  <div id="cat-sections"></div>
+</main>
+
+<div class="modal-overlay" id="modal-cat" onclick="if(event.target===this)closeModal('modal-cat')">
+  <div class="modal">
+    <h3>Nova categoria</h3>
+    <input id="modal-cat-input" placeholder="Ex: Jardim" maxlength="30" onkeydown="if(event.key==='Enter')confirmAddCat()" />
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('modal-cat')">Cancelar</button>
+      <button class="modal-confirm" onclick="confirmAddCat()">Criar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDEP9qExwnYWsrTy6IH70f09hl4JPujt2U",
+  authDomain: "casa-em-ordem-26979.firebaseapp.com",
+  databaseURL: "https://casa-em-ordem-26979-default-rtdb.firebaseio.com",
+  projectId: "casa-em-ordem-26979",
+  storageBucket: "casa-em-ordem-26979.firebasestorage.app",
+  messagingSenderId: "1082020565513",
+  appId: "1:1082020565513:web:484c4a7f730b395f539ed8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const ROOT = 'casa';
+
+const DEFAULT = {
+  cats:['Casa','Bebê','Finanças','Compras','Carro'],
+  names:{eu:'Eu',ele:'Ele'},
+  checked:{},
+  tasks:{
+    'Casa':{
+      'Diário':[
+        {text:'Lavar louça / passar na lava-louça',who:'juntos'},
+        {text:'Varrer ou aspirar a sala e cozinha',who:'eu'},
+        {text:'Limpar cadeirão e brinquedos da bebê',who:'eu'},
+        {text:'Tirar o lixo',who:'ele'},
+        {text:'Guardar roupas e objetos fora do lugar',who:'juntos'},
+      ],
+      'Semanal':[
+        {text:'Lavar roupas e separar por cor/tipo',who:'juntos'},
+        {text:'Passar roupas',who:'eu'},
+        {text:'Limpar banheiro(s)',who:'juntos'},
+        {text:'Lavar chão de toda a casa',who:'ele'},
+        {text:'Limpar pia, fogão e microondas',who:'eu'},
+        {text:'Trocar toalhas de banho e de rosto',who:'juntos'},
+        {text:'Trocar e lavar roupas de cama',who:'eu'},
+        {text:'Limpar e organizar quarto da bebê',who:'eu'},
+      ],
+      'Mensal':[
+        {text:'Limpar geladeira (interior e borrachas)',who:'juntos'},
+        {text:'Lavar cortinas ou limpar persianas',who:'ele'},
+        {text:'Limpar ventiladores ou filtros de ar-cond.',who:'ele'},
+        {text:'Organizar armários e gavetas',who:'juntos'},
+        {text:'Limpar janelas e vidros',who:'ele'},
+        {text:'Verificar validade de alimentos no estoque',who:'eu'},
+      ],
+    },
+    'Bebê':{
+      'Diário':[
+        {text:'Higiene e banho da bebê',who:'juntos'},
+        {text:'Preparar e oferecer refeições',who:'eu'},
+        {text:'Lavar mamadeiras/copos e utensílios',who:'juntos'},
+        {text:'Guardar brinquedos após uso',who:'juntos'},
+        {text:'Rotina de sono (banho, leitura, dormir)',who:'juntos'},
+      ],
+      'Semanal':[
+        {text:'Lavar roupas específicas da bebê',who:'eu'},
+        {text:'Organizar e repor fraldas/lenços/pomadas',who:'eu'},
+        {text:'Checar roupas que já ficaram pequenas',who:'eu'},
+        {text:'Higienizar brinquedos com pano úmido/álcool',who:'juntos'},
+      ],
+      'Mensal':[
+        {text:'Atualizar caderneta de saúde / vacinas pendentes',who:'juntos'},
+        {text:'Verificar estoques de produtos da bebê',who:'eu'},
+        {text:'Avaliar brinquedos por faixa etária',who:'juntos'},
+      ],
+    },
+    'Finanças':{
+      'Semanal':[
+        {text:'Registrar gastos da semana',who:'juntos'},
+        {text:'Conferir extrato bancário / Pix recebidos',who:'ele'},
+      ],
+      'Mensal':[
+        {text:'Revisar orçamento mensal juntos',who:'juntos'},
+        {text:'Pagar contas fixas (água, luz, internet, aluguel)',who:'ele'},
+        {text:'Separar valor para reserva de emergência',who:'juntos'},
+        {text:'Avaliar gastos supérfluos do mês',who:'juntos'},
+        {text:'Verificar validade de seguro de saúde/plano',who:'ele'},
+      ],
+      'Trimestral':[
+        {text:'Revisar metas financeiras do casal',who:'juntos'},
+        {text:'Checar investimentos ou poupança',who:'ele'},
+        {text:'Planejar gastos maiores (viagem, móvel, etc.)',who:'juntos'},
+      ],
+    },
+    'Compras':{
+      'Semanal':[
+        {text:'Fazer lista de mercado verificando o estoque',who:'eu'},
+        {text:'Compras do mercado (feira, supermercado)',who:'juntos'},
+      ],
+      'Mensal':[
+        {text:'Repor produtos de limpeza e higiene',who:'eu'},
+        {text:'Verificar e repor itens de farmácia da bebê',who:'eu'},
+        {text:'Comparar preços em outros mercados/apps',who:'ele'},
+      ],
+    },
+    'Carro':{
+      'Mensal':[
+        {text:'Lavar o carro externamente',who:'ele'},
+        {text:'Limpar interior: banco, tapete e painel',who:'ele'},
+        {text:'Verificar nível de óleo',who:'ele'},
+        {text:'Verificar pneus (pressão e desgaste)',who:'ele'},
+        {text:'Verificar água do radiador e limpador',who:'ele'},
+        {text:'Verificar luzes (farol, seta, freio)',who:'ele'},
+      ],
+      'Trimestral':[
+        {text:'Revisão geral na oficina',who:'juntos'},
+        {text:'Verificar documentação e vencimento do IPVA/seguro',who:'juntos'},
+        {text:'Limpar ar-condicionado do carro',who:'ele'},
+      ],
+    },
+  }
+};
+
+const WHO = ['eu','ele','juntos'];
+let S = null, activeTab = '', editMode = false, addWho = {}, remoteListening = false;
+
+function wl(w){ return w==='eu'?(S.names.eu||'Eu'):w==='ele'?(S.names.ele||'Ele'):'Juntos'; }
+function wc(w){ return 'who-'+w; }
+function eid(s){ return String(s).replace(/[^a-zA-Z0-9]/g,'_'); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function eq(s){ return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+function setSyncStatus(status) {
+  const dot = document.getElementById('sync-dot');
+  const label = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + status;
+  label.textContent = status === 'online' ? 'sincronizado' : status === 'syncing' ? 'salvando...' : 'offline';
+}
+
+function saveToFirebase(path, data) {
+  setSyncStatus('syncing');
+  set(ref(db, ROOT + '/' + path), data)
+    .then(() => setSyncStatus('online'))
+    .catch(() => setSyncStatus(''));
+}
+
+function updateFirebase(updates) {
+  setSyncStatus('syncing');
+  const prefixed = {};
+  Object.entries(updates).forEach(([k,v]) => prefixed[ROOT+'/'+k] = v);
+  update(ref(db), prefixed)
+    .then(() => setSyncStatus('online'))
+    .catch(() => setSyncStatus(''));
+}
+
+// Listen to all changes from Firebase
+function startListening() {
+  if (remoteListening) return;
+  remoteListening = true;
+  onValue(ref(db, ROOT), (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      // First time — seed with defaults
+      set(ref(db, ROOT), DEFAULT).then(() => {});
+      S = JSON.parse(JSON.stringify(DEFAULT));
+    } else {
+      S = data;
+      if (!S.names) S.names = {eu:'Eu', ele:'Ele'};
+      if (!S.cats) S.cats = DEFAULT.cats;
+      if (!S.tasks) S.tasks = DEFAULT.tasks;
+      if (!S.checked) S.checked = {};
+    }
+    if (!activeTab || !S.cats.includes(activeTab)) activeTab = S.cats[0];
+    hideLoading();
+    render();
+    setSyncStatus('online');
+  });
+}
+
+function hideLoading() {
+  const l = document.getElementById('loading');
+  l.classList.add('hidden');
+  setTimeout(() => l.style.display = 'none', 400);
+}
+
+function countCat(cat) {
+  let t=0,d=0;
+  Object.entries(S.tasks[cat]||{}).forEach(([f,ts])=>ts.forEach((_,i)=>{t++;if(S.checked&&S.checked[cat+'__'+f+'__'+i])d++;}));
+  return {t,d};
+}
+function countAll() {
+  let t=0,d=0; S.cats.forEach(c=>{const x=countCat(c);t+=x.t;d+=x.d;}); return {t,d};
+}
+function updateRing() {
+  const {t,d}=countAll(); const p=t?Math.round(d/t*100):0;
+  document.getElementById('ring-fill').style.strokeDashoffset=100.5-(100.5*p/100);
+  document.getElementById('overall-pct').textContent=p+'%';
+  document.getElementById('overall-label').textContent=d+' de '+t;
+}
+function updateLegend() {
+  document.getElementById('leg-eu').textContent=wl('eu');
+  document.getElementById('leg-ele').textContent=wl('ele');
+  document.querySelectorAll('.who-eu.who-tag').forEach(el=>el.textContent=wl('eu'));
+  document.querySelectorAll('.who-ele.who-tag').forEach(el=>el.textContent=wl('ele'));
+}
+
+window.saveNames = function() {
+  S.names.eu = document.getElementById('name-eu').value.trim()||'Eu';
+  S.names.ele = document.getElementById('name-ele').value.trim()||'Ele';
+  updateFirebase({'names': S.names});
+  updateLegend();
+};
+
+window.toggleEditMode = function() {
+  editMode=!editMode;
+  document.body.classList.toggle('editing',editMode);
+  const btn=document.getElementById('edit-btn');
+  btn.textContent=editMode?'✓ Concluir':'✏️ Editar';
+  btn.classList.toggle('active',editMode);
+  document.getElementById('names-bar').classList.toggle('visible',editMode);
+  if(editMode){
+    const eu=document.getElementById('name-eu'),ele=document.getElementById('name-ele');
+    if(eu) eu.value=S.names.eu==='Eu'?'':S.names.eu;
+    if(ele) ele.value=S.names.ele==='Ele'?'':S.names.ele;
+  }
+  renderTabs();
+};
+
+function renderTabs() {
+  const nav=document.getElementById('nav-tabs');
+  let html=S.cats.map(cat=>{
+    const {t,d}=countCat(cat);
+    if(editMode){
+      return `<div class="tab-edit-wrap">
+        <button class="nav-tab${cat===activeTab?' active':''}" onclick="setTab('${eq(cat)}')" style="padding-right:4px;">
+          <input class="tab-name-input" value="${esc(cat)}" onclick="event.stopPropagation()" onchange="renameCat('${eq(cat)}',this.value)" />
+          <span class="tab-count">${d}/${t}</span>
+        </button>
+        <button class="del-cat-btn" onclick="deleteCat('${eq(cat)}')" title="Remover">×</button>
+      </div>`;
+    }
+    return `<button class="nav-tab${cat===activeTab?' active':''}" onclick="setTab('${eq(cat)}')">${esc(cat)}<span class="tab-count">${d}/${t}</span></button>`;
+  }).join('');
+  if(editMode) html+=`<button class="add-cat-btn" onclick="openAddCat()">+ categoria</button>`;
+  nav.innerHTML=html;
+}
+
+function renderSections() {
+  document.getElementById('cat-sections').innerHTML=S.cats.map(cat=>{
+    const {t,d}=countCat(cat); const p=t?Math.round(d/t*100):0;
+    const freqsHtml=Object.entries(S.tasks[cat]||{}).map(([freq,tasks])=>{
+      const rows=(tasks||[]).map((tk,ti)=>{
+        const k=cat+'__'+freq+'__'+ti;
+        const done=!!(S.checked&&S.checked[k]);
+        return `<div class="task${done&&!editMode?' done':''}" ${editMode?'style="cursor:default;"':''} onclick="${editMode?'':'toggleTask(\''+eq(k)+'\',\''+eq(cat)+'\',\''+eq(freq)+'\','+ti+')'}">
+          <div class="checkbox" onclick="${editMode?'toggleTask(\''+eq(k)+'\',\''+eq(cat)+'\',\''+eq(freq)+'\','+ti+');event.stopPropagation()':''}"><div class="checkmark" style="${done?'display:block':''}"></div></div>
+          <span class="task-text">${esc(tk.text)}</span>
+          <input class="task-text-input" value="${esc(tk.text)}" onchange="editText('${eq(cat)}','${eq(freq)}',${ti},this.value)" onclick="event.stopPropagation()" />
+          <span class="who-tag ${wc(tk.who)}" onclick="${editMode?'cycleWho(\''+eq(cat)+'\',\''+eq(freq)+'\','+ti+');event.stopPropagation()':''}">${wl(tk.who)}</span>
+          <button class="del-task-btn" onclick="delTask('${eq(cat)}','${eq(freq)}',${ti});event.stopPropagation()">×</button>
+        </div>`;
+      }).join('');
+      const aw=addWho[cat+'::'+freq]||'juntos';
+      const addRow=`<div class="add-task-row">
+        <input class="add-task-input" placeholder="Nova tarefa..." id="ai-${eid(cat)}-${eid(freq)}" onkeydown="if(event.key==='Enter')addTask('${eq(cat)}','${eq(freq)}')" />
+        <span class="who-tag add-task-who ${wc(aw)}" onclick="cycleAddWho('${eq(cat)}','${eq(freq)}')">${wl(aw)}</span>
+        <button class="add-task-submit" onclick="addTask('${eq(cat)}','${eq(freq)}')">+ add</button>
+      </div>`;
+      const fLabel=editMode
+        ?`<input class="freq-input" value="${esc(freq)}" onchange="renameFreq('${eq(cat)}','${eq(freq)}',this.value)" />`
+        :`<span class="freq-label">${esc(freq)}</span>`;
+      return `<div class="freq-group">
+        <div class="freq-header">${fLabel}<div class="freq-line"></div>
+          <button class="del-freq-btn" onclick="delFreq('${eq(cat)}','${eq(freq)}')">remover grupo</button>
+        </div>${rows}${addRow}
+      </div>`;
+    }).join('');
+    return `<div class="cat-section${cat===activeTab?' active':''}" id="sec-${eid(cat)}">
+      <div class="cat-progress"><div class="progress-track"><div class="progress-fill" id="pf-${eid(cat)}" style="width:${p}%"></div></div><span class="progress-pct" id="pp-${eid(cat)}">${p}%</span></div>
+      ${freqsHtml}
+      <div class="add-freq-wrap"><button class="add-freq-btn" onclick="addFreq('${eq(cat)}')">+ novo grupo de frequência</button></div>
+    </div>`;
+  }).join('');
+}
+
+function render() { renderTabs(); renderSections(); updateRing(); updateLegend(); }
+
+window.setTab = function(cat) { activeTab=cat; render(); };
+
+window.toggleTask = function(key, cat, freq, ti) {
+  if (!S.checked) S.checked = {};
+  S.checked[key] = !S.checked[key];
+  updateFirebase({'checked/'+key: S.checked[key]});
+  // fast DOM update
+  const sec = document.getElementById('sec-'+eid(cat));
+  if (sec) {
+    let idx=0, found=null;
+    Object.entries(S.tasks[cat]||{}).forEach(([f,ts])=>(ts||[]).forEach((_,i)=>{
+      if(f===freq&&i===ti)found=idx; idx++;
+    }));
+    if (found !== null) {
+      const el = sec.querySelectorAll('.task')[found];
+      if (el && !editMode) el.className='task'+(S.checked[key]?' done':'');
+      if (el) { const cm=el.querySelector('.checkmark'); if(cm) cm.style.display=S.checked[key]?'block':''; }
+    }
+  }
+  const {t,d}=countCat(cat); const p=t?Math.round(d/t*100):0;
+  const pf=document.getElementById('pf-'+eid(cat)); if(pf)pf.style.width=p+'%';
+  const pp=document.getElementById('pp-'+eid(cat)); if(pp)pp.textContent=p+'%';
+  renderTabs(); updateRing();
+};
+
+window.cycleWho = function(cat,freq,ti) {
+  const ts=S.tasks[cat][freq]; const cur=ts[ti].who;
+  ts[ti].who=WHO[(WHO.indexOf(cur)+1)%WHO.length];
+  saveToFirebase('tasks/'+cat+'/'+freq, S.tasks[cat][freq]);
+  render();
+};
+
+window.cycleAddWho = function(cat,freq) {
+  const k=cat+'::'+freq; const cur=addWho[k]||'juntos';
+  addWho[k]=WHO[(WHO.indexOf(cur)+1)%WHO.length]; render();
+};
+
+window.editText = function(cat,freq,ti,val) {
+  S.tasks[cat][freq][ti].text=val;
+  saveToFirebase('tasks/'+cat+'/'+freq, S.tasks[cat][freq]);
+};
+
+window.delTask = function(cat,freq,ti) {
+  S.tasks[cat][freq].splice(ti,1);
+  // rebuild checked for this freq
+  const newC={};
+  Object.entries(S.checked||{}).forEach(([k,v])=>{ if(!k.startsWith(cat+'__'+freq+'__'))newC[k]=v; });
+  S.checked=newC;
+  updateFirebase({'tasks/'+cat+'/'+freq: S.tasks[cat][freq], 'checked': S.checked});
+  render();
+};
+
+window.addTask = function(cat,freq) {
+  const inp=document.getElementById('ai-'+eid(cat)+'-'+eid(freq));
+  if(!inp||!inp.value.trim())return;
+  if(!S.tasks[cat][freq]) S.tasks[cat][freq]=[];
+  S.tasks[cat][freq].push({text:inp.value.trim(),who:addWho[cat+'::'+freq]||'juntos'});
+  inp.value='';
+  saveToFirebase('tasks/'+cat+'/'+freq, S.tasks[cat][freq]);
+  render();
+};
+
+window.addFreq = function(cat) {
+  const name=prompt('Nome do grupo (ex: Anual):');
+  if(!name||!name.trim())return;
+  const n=name.trim();
+  if(S.tasks[cat][n]){alert('Já existe um grupo com esse nome.');return;}
+  S.tasks[cat][n]=[];
+  saveToFirebase('tasks/'+cat, S.tasks[cat]);
+  render();
+};
+
+window.delFreq = function(cat,freq) {
+  if(!confirm('Remover o grupo "'+freq+'" e todas as suas tarefas?'))return;
+  delete S.tasks[cat][freq];
+  const newC={};
+  Object.entries(S.checked||{}).forEach(([k,v])=>{ if(!k.startsWith(cat+'__'+freq+'__'))newC[k]=v; });
+  S.checked=newC;
+  updateFirebase({'tasks/'+cat: S.tasks[cat], 'checked': S.checked});
+  render();
+};
+
+window.renameCat = function(old,nw) {
+  nw=nw.trim(); if(!nw||nw===old)return;
+  if(S.cats.includes(nw)){alert('Já existe uma categoria com esse nome.');render();return;}
+  const i=S.cats.indexOf(old); S.cats[i]=nw;
+  S.tasks[nw]=S.tasks[old]; delete S.tasks[old];
+  const newC={};
+  Object.entries(S.checked||{}).forEach(([k,v])=>newC[k.startsWith(old+'__')?(nw+'__'+k.slice(old.length+2)):k]=v);
+  S.checked=newC;
+  if(activeTab===old)activeTab=nw;
+  saveToFirebase('', S);
+  render();
+};
+
+window.renameFreq = function(cat,old,nw) {
+  nw=nw.trim(); if(!nw||nw===old)return;
+  const keys=Object.keys(S.tasks[cat]); const i=keys.indexOf(old);
+  const newT={}; keys.forEach((k,j)=>newT[j===i?nw:k]=S.tasks[cat][k]);
+  S.tasks[cat]=newT;
+  const newC={};
+  Object.entries(S.checked||{}).forEach(([k,v])=>newC[k.startsWith(cat+'__'+old+'__')?(cat+'__'+nw+'__'+k.split('__')[2]):k]=v);
+  S.checked=newC;
+  updateFirebase({'tasks/'+cat: S.tasks[cat], 'checked': S.checked});
+  render();
+};
+
+window.deleteCat = function(cat) {
+  if(S.cats.length<=1){alert('Precisa ter ao menos uma categoria.');return;}
+  if(!confirm('Remover a categoria "'+cat+'" e todas as suas tarefas?'))return;
+  S.cats=S.cats.filter(c=>c!==cat); delete S.tasks[cat];
+  const newC={};
+  Object.entries(S.checked||{}).forEach(([k,v])=>{ if(!k.startsWith(cat+'__'))newC[k]=v; });
+  S.checked=newC;
+  if(activeTab===cat)activeTab=S.cats[0];
+  saveToFirebase('', S);
+  render();
+};
+
+window.openAddCat = function() {
+  document.getElementById('modal-cat-input').value='';
+  document.getElementById('modal-cat').classList.add('open');
+  setTimeout(()=>document.getElementById('modal-cat-input').focus(),100);
+};
+window.closeModal = function(id){ document.getElementById(id).classList.remove('open'); };
+window.confirmAddCat = function() {
+  const name=document.getElementById('modal-cat-input').value.trim();
+  if(!name)return;
+  if(S.cats.includes(name)){alert('Já existe uma categoria com esse nome.');return;}
+  S.cats.push(name); S.tasks[name]={'Semanal':[]};
+  activeTab=name;
+  saveToFirebase('', S);
+  closeModal('modal-cat');
+  render();
+};
+
+window.resetAll = function() {
+  if(!confirm('Limpar todas as tarefas marcadas?'))return;
+  S.checked={};
+  saveToFirebase('checked', {});
+  render();
+};
+
+// Start
+startListening();
+</script>
+</body>
+</html>
