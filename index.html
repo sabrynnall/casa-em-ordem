@@ -556,7 +556,7 @@ window.delTask = function(cat,freq,ti) {
   const newC={};
   Object.entries(S.checked||{}).forEach(([k,v])=>{ if(!k.startsWith(cat+'__'+freq+'__'))newC[k]=v; });
   S.checked=newC;
-  updateFirebase({'tasks/'+cat+'/'+freq: S.tasks[cat][freq], 'checked': S.checked});
+  const u1={}; u1['tasks/'+cat+'/'+freq]=S.tasks[cat][freq]; u1['checked']=S.checked; updateFirebase(u1);
   render();
 };
 
@@ -586,7 +586,7 @@ window.delFreq = function(cat,freq) {
   const newC={};
   Object.entries(S.checked||{}).forEach(([k,v])=>{ if(!k.startsWith(cat+'__'+freq+'__'))newC[k]=v; });
   S.checked=newC;
-  updateFirebase({'tasks/'+cat: S.tasks[cat], 'checked': S.checked});
+  const ud1={}; ud1['tasks/'+cat]=S.tasks[cat]; ud1['checked']=S.checked; updateFirebase(ud1);
   render();
 };
 
@@ -611,7 +611,7 @@ window.renameFreq = function(cat,old,nw) {
   const newC={};
   Object.entries(S.checked||{}).forEach(([k,v])=>newC[k.startsWith(cat+'__'+old+'__')?(cat+'__'+nw+'__'+k.split('__')[2]):k]=v);
   S.checked=newC;
-  updateFirebase({'tasks/'+cat: S.tasks[cat], 'checked': S.checked});
+  const ud2={}; ud2['tasks/'+cat]=S.tasks[cat]; ud2['checked']=S.checked; updateFirebase(ud2);
   render();
 };
 
